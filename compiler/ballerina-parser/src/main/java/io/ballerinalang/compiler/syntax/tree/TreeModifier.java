@@ -644,7 +644,7 @@ public abstract class TreeModifier extends NodeTransformer<Node> {
                 modifyToken(constantDeclarationNode.visibilityQualifier());
         Token constKeyword =
                 modifyToken(constantDeclarationNode.constKeyword());
-        Node typeDescriptor =
+        TypeDescriptorNode typeDescriptor =
                 modifyNode(constantDeclarationNode.typeDescriptor());
         Token variableName =
                 modifyToken(constantDeclarationNode.variableName());
@@ -1883,16 +1883,13 @@ public abstract class TreeModifier extends NodeTransformer<Node> {
             TupleTypeDescriptorNode tupleTypeDescriptorNode) {
         Token openBracketToken =
                 modifyToken(tupleTypeDescriptorNode.openBracketToken());
-        SeparatedNodeList<TypeDescriptorNode> memberTypeDesc =
+        SeparatedNodeList<Node> memberTypeDesc =
                 modifySeparatedNodeList(tupleTypeDescriptorNode.memberTypeDesc());
-        Node restTypeDesc =
-                modifyNode(tupleTypeDescriptorNode.restTypeDesc());
         Token closeBracketToken =
                 modifyToken(tupleTypeDescriptorNode.closeBracketToken());
         return tupleTypeDescriptorNode.modify(
                 openBracketToken,
                 memberTypeDesc,
-                restTypeDesc,
                 closeBracketToken);
     }
 
@@ -2097,11 +2094,14 @@ public abstract class TreeModifier extends NodeTransformer<Node> {
     @Override
     public StartActionNode transform(
             StartActionNode startActionNode) {
+        NodeList<AnnotationNode> annotations =
+                modifyNodeList(startActionNode.annotations());
         Token startKeyword =
                 modifyToken(startActionNode.startKeyword());
         ExpressionNode expression =
                 modifyNode(startActionNode.expression());
         return startActionNode.modify(
+                annotations,
                 startKeyword,
                 expression);
     }
@@ -2249,14 +2249,110 @@ public abstract class TreeModifier extends NodeTransformer<Node> {
             ReceiveFieldsNode receiveFieldsNode) {
         Token openBrace =
                 modifyToken(receiveFieldsNode.openBrace());
-        SeparatedNodeList<NameReferenceNode> receiveField =
-                modifySeparatedNodeList(receiveFieldsNode.receiveField());
+        SeparatedNodeList<NameReferenceNode> receiveFields =
+                modifySeparatedNodeList(receiveFieldsNode.receiveFields());
         Token closeBrace =
                 modifyToken(receiveFieldsNode.closeBrace());
         return receiveFieldsNode.modify(
                 openBrace,
-                receiveField,
+                receiveFields,
                 closeBrace);
+    }
+
+    @Override
+    public RestDescriptorNode transform(
+            RestDescriptorNode restDescriptorNode) {
+        TypeDescriptorNode typeDescriptor =
+                modifyNode(restDescriptorNode.typeDescriptor());
+        Token ellipsisToken =
+                modifyToken(restDescriptorNode.ellipsisToken());
+        return restDescriptorNode.modify(
+                typeDescriptor,
+                ellipsisToken);
+    }
+
+    @Override
+    public DoubleGTTokenNode transform(
+            DoubleGTTokenNode doubleGTTokenNode) {
+        Token openGTToken =
+                modifyToken(doubleGTTokenNode.openGTToken());
+        Token endGTToken =
+                modifyToken(doubleGTTokenNode.endGTToken());
+        return doubleGTTokenNode.modify(
+                openGTToken,
+                endGTToken);
+    }
+
+    @Override
+    public TrippleGTTokenNode transform(
+            TrippleGTTokenNode trippleGTTokenNode) {
+        Token openGTToken =
+                modifyToken(trippleGTTokenNode.openGTToken());
+        Token middleGTToken =
+                modifyToken(trippleGTTokenNode.middleGTToken());
+        Token endGTToken =
+                modifyToken(trippleGTTokenNode.endGTToken());
+        return trippleGTTokenNode.modify(
+                openGTToken,
+                middleGTToken,
+                endGTToken);
+    }
+
+    @Override
+    public WaitActionNode transform(
+            WaitActionNode waitActionNode) {
+        Token waitKeyword =
+                modifyToken(waitActionNode.waitKeyword());
+        Node waitFutureExpr =
+                modifyNode(waitActionNode.waitFutureExpr());
+        return waitActionNode.modify(
+                waitKeyword,
+                waitFutureExpr);
+    }
+
+    @Override
+    public WaitFieldsListNode transform(
+            WaitFieldsListNode waitFieldsListNode) {
+        Token openBrace =
+                modifyToken(waitFieldsListNode.openBrace());
+        SeparatedNodeList<Node> waitFields =
+                modifySeparatedNodeList(waitFieldsListNode.waitFields());
+        Token closeBrace =
+                modifyToken(waitFieldsListNode.closeBrace());
+        return waitFieldsListNode.modify(
+                openBrace,
+                waitFields,
+                closeBrace);
+    }
+
+    @Override
+    public WaitFieldNode transform(
+            WaitFieldNode waitFieldNode) {
+        NameReferenceNode fieldName =
+                modifyNode(waitFieldNode.fieldName());
+        Token colon =
+                modifyToken(waitFieldNode.colon());
+        ExpressionNode waitFutureExpr =
+                modifyNode(waitFieldNode.waitFutureExpr());
+        return waitFieldNode.modify(
+                fieldName,
+                colon,
+                waitFutureExpr);
+    }
+
+    @Override
+    public AnnotAccessExpressionNode transform(
+            AnnotAccessExpressionNode annotAccessExpressionNode) {
+        ExpressionNode expression =
+                modifyNode(annotAccessExpressionNode.expression());
+        Token annotChainingToken =
+                modifyToken(annotAccessExpressionNode.annotChainingToken());
+        Node annotTagReference =
+                modifyNode(annotAccessExpressionNode.annotTagReference());
+        return annotAccessExpressionNode.modify(
+                expression,
+                annotChainingToken,
+                annotTagReference);
     }
 
     // Tokens

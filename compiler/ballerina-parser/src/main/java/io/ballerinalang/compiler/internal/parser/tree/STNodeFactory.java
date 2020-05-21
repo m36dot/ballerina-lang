@@ -1391,13 +1391,11 @@ public class STNodeFactory extends STAbstractNodeFactory {
     public static STNode createTupleTypeDescriptorNode(
             STNode openBracketToken,
             STNode memberTypeDesc,
-            STNode restTypeDesc,
             STNode closeBracketToken) {
 
         return new STTupleTypeDescriptorNode(
                 openBracketToken,
                 memberTypeDesc,
-                restTypeDesc,
                 closeBracketToken);
     }
 
@@ -1548,10 +1546,12 @@ public class STNodeFactory extends STAbstractNodeFactory {
     }
 
     public static STNode createStartActionNode(
+            STNode annotations,
             STNode startKeyword,
             STNode expression) {
 
         return new STStartActionNode(
+                annotations,
                 startKeyword,
                 expression);
     }
@@ -1660,13 +1660,84 @@ public class STNodeFactory extends STAbstractNodeFactory {
 
     public static STNode createReceiveFieldsNode(
             STNode openBrace,
-            STNode receiveField,
+            STNode receiveFields,
             STNode closeBrace) {
 
         return new STReceiveFieldsNode(
                 openBrace,
-                receiveField,
+                receiveFields,
                 closeBrace);
+    }
+
+    public static STNode createRestDescriptorNode(
+            STNode typeDescriptor,
+            STNode ellipsisToken) {
+
+        return new STRestDescriptorNode(
+                typeDescriptor,
+                ellipsisToken);
+    }
+
+    public static STNode createDoubleGTTokenNode(
+            STNode openGTToken,
+            STNode endGTToken) {
+
+        return new STDoubleGTTokenNode(
+                openGTToken,
+                endGTToken);
+    }
+
+    public static STNode createTrippleGTTokenNode(
+            STNode openGTToken,
+            STNode middleGTToken,
+            STNode endGTToken) {
+
+        return new STTrippleGTTokenNode(
+                openGTToken,
+                middleGTToken,
+                endGTToken);
+    }
+
+    public static STNode createWaitActionNode(
+            STNode waitKeyword,
+            STNode waitFutureExpr) {
+
+        return new STWaitActionNode(
+                waitKeyword,
+                waitFutureExpr);
+    }
+
+    public static STNode createWaitFieldsListNode(
+            STNode openBrace,
+            STNode waitFields,
+            STNode closeBrace) {
+
+        return new STWaitFieldsListNode(
+                openBrace,
+                waitFields,
+                closeBrace);
+    }
+
+    public static STNode createWaitFieldNode(
+            STNode fieldName,
+            STNode colon,
+            STNode waitFutureExpr) {
+
+        return new STWaitFieldNode(
+                fieldName,
+                colon,
+                waitFutureExpr);
+    }
+
+    public static STNode createAnnotAccessExpressionNode(
+            STNode expression,
+            STNode annotChainingToken,
+            STNode annotTagReference) {
+
+        return new STAnnotAccessExpressionNode(
+                expression,
+                annotChainingToken,
+                annotTagReference);
     }
 }
 
