@@ -167,8 +167,8 @@ public class BallerinaParser extends AbstractParser {
             case STATEMENT_START_IDENTIFIER:
                 return parseStatementStartIdentifier();
             case VAR_DECL_STMT_RHS:
-                return parseVarDeclRhs((STNode) args[0], (STNode) args[1], (STNode) args[2], (STNode) args[3],
-                        (boolean) args[4]);
+                return parseVarDeclRhs((STNode) args[0], (STNode) args[1], (STNode) args[2],
+                        (boolean) args[3]);
             case TYPE_REFERENCE:
                 return parseTypeReference();
             case FIELD_DESCRIPTOR_RHS:
@@ -1349,8 +1349,8 @@ public class BallerinaParser extends AbstractParser {
                 endContext(); // end the func-type
                 startContext(ParserRuleContext.VAR_DECL_STMT);
                 STNode typeDesc = STNodeFactory.createFunctionTypeDescriptorNode(functionKeyword, funcSignature);
-                STNode varName = parseVariableName();
-                STNode varDecl = parseVarDeclRhs(metadata, visibilityQualifier, typeDesc, varName, true);
+                STNode typedBindingPattern = parseTypedBindingPatternRhs(typeDesc);
+                STNode varDecl = parseVarDeclRhs(metadata, visibilityQualifier, typedBindingPattern, true);
                 return varDecl;
             case OPEN_PAREN_TOKEN: // function body block
             case EQUAL_TOKEN: // external function
@@ -3374,9 +3374,8 @@ public class BallerinaParser extends AbstractParser {
      */
     private STNode parseVariableDecl(STNode annots, STNode finalKeyword, boolean isModuleVar) {
         startContext(ParserRuleContext.VAR_DECL_STMT);
-        STNode type = parseTypeDescriptor(ParserRuleContext.TYPE_DESC_IN_TYPE_BINDING_PATTERN);
-        STNode varName = parseVariableName();
-        STNode varDecl = parseVarDeclRhs(annots, finalKeyword, type, varName, isModuleVar);
+        STNode typedBindingPattern = parseTypedBindingPattern();
+        STNode varDecl = parseVarDeclRhs(annots, finalKeyword, typedBindingPattern, isModuleVar);
         endContext();
         return varDecl;
     }
@@ -3406,14 +3405,13 @@ public class BallerinaParser extends AbstractParser {
      *
      * @param metadata metadata
      * @param finalKeyword Final keyword
-     * @param type Type descriptor
-     * @param varName Variable name
+     * @param typedBindingPattern Typed Binding Pattern
      * @return Parsed node
      */
-    private STNode parseVarDeclRhs(STNode metadata, STNode finalKeyword, STNode type, STNode varName,
+    private STNode parseVarDeclRhs(STNode metadata, STNode finalKeyword, STNode typedBindingPattern,
                                    boolean isModuleVar) {
         STToken token = peek();
-        return parseVarDeclRhs(token.kind, metadata, finalKeyword, type, varName, isModuleVar);
+        return parseVarDeclRhs(token.kind, metadata, finalKeyword, typedBindingPattern, isModuleVar);
     }
 
     /**
@@ -3423,13 +3421,12 @@ public class BallerinaParser extends AbstractParser {
      * @param tokenKind Next token kind
      * @param metadata Metadata
      * @param finalKeyword Final keyword
-     * @param type Type descriptor
-     * @param varName Variable name
+     * @param typedBindingPattern Typed Binding Pattern
      * @param isModuleVar flag indicating whether the var is module level
      * @return Parsed node
      */
-    private STNode parseVarDeclRhs(SyntaxKind tokenKind, STNode metadata, STNode finalKeyword, STNode type,
-                                   STNode varName, boolean isModuleVar) {
+    private STNode parseVarDeclRhs(SyntaxKind tokenKind, STNode metadata, STNode finalKeyword,
+                                   STNode typedBindingPattern, boolean isModuleVar) {
         STNode assign;
         STNode expr;
         STNode semicolon;
@@ -3453,8 +3450,8 @@ public class BallerinaParser extends AbstractParser {
                 break;
             default:
                 STToken token = peek();
-                Solution solution = recover(token, ParserRuleContext.VAR_DECL_STMT_RHS, metadata, finalKeyword, type,
-                        varName, isModuleVar);
+                Solution solution = recover(token, ParserRuleContext.VAR_DECL_STMT_RHS, metadata, finalKeyword,
+                        typedBindingPattern, isModuleVar);
 
                 // If the parser recovered by inserting a token, then try to re-parse the same
                 // rule with the inserted token. This is done to pick the correct branch
@@ -3463,15 +3460,15 @@ public class BallerinaParser extends AbstractParser {
                     return solution.recoveredNode;
                 }
 
-                return parseVarDeclRhs(solution.tokenKind, metadata, finalKeyword, type, varName, isModuleVar);
+                return parseVarDeclRhs(solution.tokenKind, metadata, finalKeyword, typedBindingPattern, isModuleVar);
         }
 
         if (isModuleVar) {
-            return STNodeFactory.createModuleVariableDeclarationNode(metadata, finalKeyword, type, varName, assign,
+            return STNodeFactory.createModuleVariableDeclarationNode(metadata, finalKeyword, typedBindingPattern, assign,
                     expr, semicolon);
         }
 
-        return STNodeFactory.createVariableDeclarationNode(metadata, finalKeyword, type, varName, assign, expr,
+        return STNodeFactory.createVariableDeclarationNode(metadata, finalKeyword, typedBindingPattern, assign, expr,
                 semicolon);
     }
 
@@ -6413,16 +6410,9 @@ public class BallerinaParser extends AbstractParser {
 
     private STNode parseTypeDescStartsWithIdentifier(STNode typeDesc, STNode annots) {
         switchContext(ParserRuleContext.VAR_DECL_STMT);
-
-        // We haven't parsed the type-desc as a type-desc (parsed as an identifier).
-        // Therefore handle the context manually here.
-        startContext(ParserRuleContext.TYPE_DESC_IN_TYPE_BINDING_PATTERN);
-        typeDesc = parseComplexTypeDescriptor(typeDesc, ParserRuleContext.TYPE_DESC_IN_TYPE_BINDING_PATTERN, false);
-        endContext();
-
-        STNode varName = parseVariableName();
+        STNode typedBindingPattern = parseTypedBindingPattern(typeDesc);
         STNode finalKeyword = STNodeFactory.createEmptyNode();
-        return parseVarDeclRhs(annots, finalKeyword, typeDesc, varName, false);
+        return parseVarDeclRhs(annots, finalKeyword, typedBindingPattern, false);
     }
 
     /**
@@ -6477,9 +6467,9 @@ public class BallerinaParser extends AbstractParser {
                 // Could be a var-decl, with array-type
                 if (isPossibleArrayType(expression)) {
                     switchContext(ParserRuleContext.VAR_DECL_STMT);
-                    STNode varName = parseVariableName();
+                    STNode typedBindingPattern = parseTypedBindingPatternRhs(expression); //need fixing
                     STNode finalKeyword = STNodeFactory.createEmptyNode();
-                    return parseVarDeclRhs(annots, finalKeyword, expression, varName, false);
+                    return parseVarDeclRhs(annots, finalKeyword, typedBindingPattern, false);
                 }
                 // fall through
             default:
@@ -9822,16 +9812,31 @@ public class BallerinaParser extends AbstractParser {
     private STNode parseTypedBindingPattern() {
         startContext(ParserRuleContext.TYPED_BINDING_PATTERN);
         STNode typeDesc = parseTypeDescriptor(ParserRuleContext.TYPE_DESC_IN_TYPE_BINDING_PATTERN, true);
+        STNode typedBindingPattern = parseTypedBindingPatternRhs(typeDesc);
+        endContext();
+        return typedBindingPattern;
+    }
 
+    private STNode parseTypedBindingPattern(STNode typeDesc) {
+        startContext(ParserRuleContext.TYPED_BINDING_PATTERN);
+        // We haven't parsed the type-desc as a type-desc (parsed as an identifier).
+        // Therefore handle the context manually here.
+        startContext(ParserRuleContext.TYPE_DESC_IN_TYPE_BINDING_PATTERN);
+        typeDesc = parseComplexTypeDescriptor(typeDesc, ParserRuleContext.TYPE_DESC_IN_TYPE_BINDING_PATTERN, true);
+        endContext(); //TYPE_DESC_IN_TYPE_BINDING_PATTERN context
+        STNode typedBindingPattern = parseTypedBindingPatternRhs(typeDesc);
+        endContext();
+        return typedBindingPattern;
+    }
+
+
+    private STNode parseTypedBindingPatternRhs(STNode typeDesc) {
         STNode bindingPattern = null;
         if (peek().kind == SyntaxKind.OPEN_BRACKET_TOKEN) {
             STNode typedBindingPattern = parseArrayTypeDescOrListBindingPattern(typeDesc);
-            endContext();
             return typedBindingPattern;
         }
         bindingPattern = parseBindingPattern();
-
-        endContext();
         return STNodeFactory.createTypedBindingPatternNode(typeDesc, bindingPattern);
     }
 
