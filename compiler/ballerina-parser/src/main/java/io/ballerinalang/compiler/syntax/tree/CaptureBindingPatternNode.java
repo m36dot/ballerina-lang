@@ -20,7 +20,6 @@ package io.ballerinalang.compiler.syntax.tree;
 import io.ballerinalang.compiler.internal.parser.tree.STNode;
 
 import java.util.Objects;
-import java.util.Optional;
 
 /**
  * This is a generated syntax tree node.
@@ -33,8 +32,8 @@ public class CaptureBindingPatternNode extends BindingPatternNode {
         super(internalNode, position, parent);
     }
 
-    public Optional<SimpleNameReferenceNode> variableName() {
-        return optionalChildInBucket(0);
+    public SimpleNameReferenceNode variableName() {
+        return childInBucket(0);
     }
 
     @Override
@@ -79,7 +78,7 @@ public class CaptureBindingPatternNode extends BindingPatternNode {
 
         public CaptureBindingPatternNodeModifier(CaptureBindingPatternNode oldNode) {
             this.oldNode = oldNode;
-            this.variableName = oldNode.variableName().orElse(null);
+            this.variableName = oldNode.variableName();
         }
 
         public CaptureBindingPatternNodeModifier withVariableName(
