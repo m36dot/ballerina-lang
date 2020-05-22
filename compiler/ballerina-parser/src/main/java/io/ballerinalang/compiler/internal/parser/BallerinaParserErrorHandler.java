@@ -398,6 +398,9 @@ public class BallerinaParserErrorHandler extends AbstractParserErrorHandler {
     private static final ParserRuleContext[] LIST_BINDING_PATTERN_END_OR_CONTINUE =
             { ParserRuleContext.COMMA, ParserRuleContext.CLOSE_BRACKET };
 
+    private static final ParserRuleContext[] VAR_DECL_STMT_TYPED_BINDING_PATTERN_RHS =
+            { ParserRuleContext.SEMICOLON, ParserRuleContext.ASSIGN_OP };
+
     private static final ParserRuleContext[] REMOTE_CALL_OR_ASYNC_SEND_RHS =
             { ParserRuleContext.WORKER_NAME_OR_METHOD_NAME, ParserRuleContext.DEFAULT_WORKER_NAME_IN_ASYNC_SEND };
 
@@ -491,6 +494,7 @@ public class BallerinaParserErrorHandler extends AbstractParserErrorHandler {
             case BINDING_PATTERN:
             case LIST_BINDING_PATTERN_CONTENTS:
             case LIST_BINDING_PATTERN_END_OR_CONTINUE:
+            case VAR_DECL_STMT_TYPED_BINDING_PATTERN_RHS:
             case REMOTE_CALL_OR_ASYNC_SEND_RHS:
             case REMOTE_CALL_OR_ASYNC_SEND_END:
             case RECEIVE_FIELD_END:
@@ -1064,6 +1068,7 @@ public class BallerinaParserErrorHandler extends AbstractParserErrorHandler {
             case BINDING_PATTERN:
             case LIST_BINDING_PATTERN_END_OR_CONTINUE:
             case LIST_BINDING_PATTERN_CONTENTS:
+            case VAR_DECL_STMT_TYPED_BINDING_PATTERN_RHS:
             case KEY_CONSTRAINTS_RHS:
             case TABLE_TYPE_DESC_RHS:
             case NEW_KEYWORD_RHS:
@@ -1368,6 +1373,9 @@ public class BallerinaParserErrorHandler extends AbstractParserErrorHandler {
             case LIST_BINDING_PATTERN_CONTENTS:
                 alternativeRules = LIST_BINDING_PATTERN_CONTENTS;
                 break;
+            case VAR_DECL_STMT_TYPED_BINDING_PATTERN_RHS:
+                alternativeRules = VAR_DECL_STMT_TYPED_BINDING_PATTERN_RHS;
+                break;
             case KEY_CONSTRAINTS_RHS:
                 alternativeRules = KEY_CONSTRAINTS_RHS;
                 break;
@@ -1584,6 +1592,8 @@ public class BallerinaParserErrorHandler extends AbstractParserErrorHandler {
         if (parentCtx == ParserRuleContext.IF_BLOCK || parentCtx == ParserRuleContext.WHILE_BLOCK ||
                 parentCtx == ParserRuleContext.FOREACH_STMT) {
             nextContext = ParserRuleContext.BLOCK_STMT;
+        } else if (parentCtx == ParserRuleContext.TYPED_BINDING_PATTERN) {
+            nextContext = getNextRuleForTypedBindingPattern();
         } else if (isStatement(parentCtx) || parentCtx == ParserRuleContext.RECORD_FIELD ||
                 parentCtx == ParserRuleContext.OBJECT_MEMBER || parentCtx == ParserRuleContext.LISTENER_DECL ||
                 parentCtx == ParserRuleContext.CONSTANT_DECL) {
@@ -1700,7 +1710,7 @@ public class BallerinaParserErrorHandler extends AbstractParserErrorHandler {
             case COMPOUND_ASSIGNMENT_STMT:
                 return ParserRuleContext.VARIABLE_NAME;
             case VAR_DECL_STMT:
-                return ParserRuleContext.TYPE_DESC_IN_TYPE_BINDING_PATTERN;
+                return ParserRuleContext.TYPED_BINDING_PATTERN;
             case EXPRESSION_RHS:
                 return ParserRuleContext.BINARY_OPERATOR;
             case BINARY_OPERATOR:
@@ -1871,7 +1881,7 @@ public class BallerinaParserErrorHandler extends AbstractParserErrorHandler {
                 return ParserRuleContext.LISTENER_KEYWORD;
             case FINAL_KEYWORD:
                 // Assume the final keyword is only used in var-decl.
-                return ParserRuleContext.TYPE_DESC_IN_TYPE_BINDING_PATTERN;
+                return ParserRuleContext.TYPED_BINDING_PATTERN;
             case CONSTANT_DECL:
                 return ParserRuleContext.CONST_KEYWORD;
             case CONST_KEYWORD:
@@ -2006,7 +2016,7 @@ public class BallerinaParserErrorHandler extends AbstractParserErrorHandler {
             case FOREACH_STMT:
                 return ParserRuleContext.FOREACH_KEYWORD;
             case FOREACH_KEYWORD:
-                return ParserRuleContext.TYPE_DESC_IN_TYPE_BINDING_PATTERN;
+                return ParserRuleContext.TYPED_BINDING_PATTERN;
             case IN_KEYWORD:
                 parentCtx = getParentContext();
                 if (parentCtx == ParserRuleContext.LET_EXPR_LET_VAR_DECL) {
@@ -2118,7 +2128,7 @@ public class BallerinaParserErrorHandler extends AbstractParserErrorHandler {
                 // and trying to match it against a var-decl. Since this wasn't a var-decl
                 // originally, a context for type hasn't started yet. Therefore start a
                 // a context manually here.
-                startContext(ParserRuleContext.TYPE_DESC_IN_TYPE_BINDING_PATTERN);
+                startContext(ParserRuleContext.TYPED_BINDING_PATTERN);
                 return ParserRuleContext.TYPEDESC_RHS;
             case INFERRED_TYPE_DESC:
                 return ParserRuleContext.GT;
@@ -2171,8 +2181,8 @@ public class BallerinaParserErrorHandler extends AbstractParserErrorHandler {
                 // originally, a context for type hasn't started yet. Therefore start a
                 // a context manually here.
                 startContext(ParserRuleContext.VAR_DECL_STMT);
-                startContext(ParserRuleContext.TYPE_DESC_IN_TYPE_BINDING_PATTERN);
-                return ParserRuleContext.TYPEDESC_RHS;
+                startContext(ParserRuleContext.TYPED_BINDING_PATTERN);
+                return ParserRuleContext.TYPED_BINDING_PATTERN;
             case FUNC_TYPE_DESC_END:
                 endContext();
                 return ParserRuleContext.TYPEDESC_RHS;
@@ -2528,7 +2538,8 @@ public class BallerinaParserErrorHandler extends AbstractParserErrorHandler {
                 if (isInTypeDescContext()) {
                     return ParserRuleContext.TYPEDESC_RHS;
                 }
-                if (getParentContext() == ParserRuleContext.FOREACH_STMT) {
+                if (getParentContext() == ParserRuleContext.FOREACH_STMT ||
+                        getParentContext() == ParserRuleContext.VAR_DECL_STMT) {
                     return ParserRuleContext.BINDING_PATTERN;
                 }
                 return ParserRuleContext.VARIABLE_NAME;
@@ -3060,6 +3071,9 @@ public class BallerinaParserErrorHandler extends AbstractParserErrorHandler {
                 if (isInTypeDescContext()) {
                     return ParserRuleContext.TYPEDESC_RHS;
                 }
+                if (parentCtx == ParserRuleContext.TYPED_BINDING_PATTERN) {
+                    return getNextRuleForTypedBindingPattern();
+                }
                 throw new IllegalStateException(parentCtx.toString());
         }
     }
@@ -3110,6 +3124,8 @@ public class BallerinaParserErrorHandler extends AbstractParserErrorHandler {
                 return getNextRuleForTypedBindingPattern();
             case FOREACH_STMT:
                 return ParserRuleContext.IN_KEYWORD;
+            case VAR_DECL_STMT:
+                return ParserRuleContext.VAR_DECL_STMT_TYPED_BINDING_PATTERN_RHS;
             case LIST_BINDING_PATTERN:
                 return ParserRuleContext.LIST_BINDING_PATTERN_END_OR_CONTINUE;
             case REST_BINDING_PATTERN:

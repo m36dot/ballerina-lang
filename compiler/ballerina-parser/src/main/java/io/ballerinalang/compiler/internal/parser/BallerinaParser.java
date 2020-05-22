@@ -10017,6 +10017,7 @@ public class BallerinaParser extends AbstractParser {
     private Boolean isFollowTypedBindingPattern(SyntaxKind tokenKind) {
         switch (tokenKind) {
             case IN_KEYWORD:
+            case EQUAL_TOKEN:
             case EOF_TOKEN:
                 return true;
             default:

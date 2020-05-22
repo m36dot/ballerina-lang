@@ -187,6 +187,7 @@ public enum ParserRuleContext {
     ASSIGNMENT_STMT("assignment-stmt"),
     VAR_DECL_STMT("var-decl-stmt"),
     VAR_DECL_STMT_RHS("var-decl-rhs"),
+    VAR_DECL_STMT_TYPED_BINDING_PATTERN_RHS("var-decl-stmt-typed-binding-pattern-rhs"),
     STATEMENT_START_IDENTIFIER("type-or-var-name"),
     ASSIGNMENT_OR_VAR_DECL_STMT("assign-or-var-decl"),
     ASSIGNMENT_OR_VAR_DECL_STMT_RHS("assign-or-var-decl-rhs"),
