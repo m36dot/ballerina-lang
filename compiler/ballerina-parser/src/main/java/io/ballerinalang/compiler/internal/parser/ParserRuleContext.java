@@ -180,6 +180,9 @@ public enum ParserRuleContext {
     WAIT_FUTURE_EXPR_END("wait-future-expr-end"),
     ALTERNATE_WAIT_EXPRS("alternate-wait-exprs"),
     ALTERNATE_WAIT_EXPR_LIST_END("alternate-wait-expr-lit-end"),
+    DO_CLAUSE("do-clause"),
+    MEMBER_ACCESS_KEY_EXPR_END("member-access-key-expr-end"),
+    MEMBER_ACCESS_KEY_EXPR("member-access-key-expr"),
 
     // Statements
     STATEMENT("statement"),
@@ -272,6 +275,7 @@ public enum ParserRuleContext {
     FLUSH_KEYWORD("flush"),
     DEFAULT_KEYWORD("default"),
     WAIT_KEYWORD("wait"),
+    DO_KEYWORD("do"),
 
     // Syntax tokens
     OPEN_PARENTHESIS("("),
@@ -310,6 +314,7 @@ public enum ParserRuleContext {
     SYNC_SEND_TOKEN("->>"),
     LEFT_ARROW_TOKEN("<-"),
     ANNOT_CHAINING_TOKEN(".@"),
+    OPTIONAL_CHAINING_TOKEN("?."),
 
     // Other terminals
     FUNC_NAME("function-name"),
@@ -376,8 +381,10 @@ public enum ParserRuleContext {
     TABLE_CONSTRUCTOR_OR_QUERY_START("table-constructor-or-query-start"),
     TABLE_CONSTRUCTOR_OR_QUERY_RHS("table-constructor-or-query-rhs"),
     QUERY_EXPRESSION("query-expr"),
-    QUERY_EXPRESSION_RHS("query-expr-rhs"),
     ANNOT_TAG_REFERENCE("annot-tag-reference"),
+    QUERY_PIPELINE_RHS("query-pipeline-rhs"),
+    LET_CLAUSE_END("let-clause-end"),
+    CONDITIONAL_EXPRESSION("conditional-expr"),
 
     // Contexts that expect a type
     TYPE_DESC_IN_ANNOTATION_DECL("type-desc-annotation-descl"),

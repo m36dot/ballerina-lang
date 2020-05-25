@@ -576,8 +576,8 @@ public abstract class TreeModifier extends NodeTransformer<Node> {
                 modifyNode(indexedExpressionNode.containerExpression());
         Token openBracket =
                 modifyToken(indexedExpressionNode.openBracket());
-        ExpressionNode keyExpression =
-                modifyNode(indexedExpressionNode.keyExpression());
+        SeparatedNodeList<ExpressionNode> keyExpression =
+                modifySeparatedNodeList(indexedExpressionNode.keyExpression());
         Token closeBracket =
                 modifyToken(indexedExpressionNode.closeBracket());
         return indexedExpressionNode.modify(
@@ -677,7 +677,7 @@ public abstract class TreeModifier extends NodeTransformer<Node> {
         Node typeName =
                 modifyNode(defaultableParameterNode.typeName());
         Token paramName =
-                modifyToken(defaultableParameterNode.paramName());
+                modifyToken(defaultableParameterNode.paramName().orElse(null));
         Token equalsToken =
                 modifyToken(defaultableParameterNode.equalsToken());
         Node expression =
@@ -704,7 +704,7 @@ public abstract class TreeModifier extends NodeTransformer<Node> {
         Node typeName =
                 modifyNode(requiredParameterNode.typeName());
         Token paramName =
-                modifyToken(requiredParameterNode.paramName());
+                modifyToken(requiredParameterNode.paramName().orElse(null));
         return requiredParameterNode.modify(
                 leadingComma,
                 annotations,
@@ -725,7 +725,7 @@ public abstract class TreeModifier extends NodeTransformer<Node> {
         Token ellipsisToken =
                 modifyToken(restParameterNode.ellipsisToken());
         Token paramName =
-                modifyToken(restParameterNode.paramName());
+                modifyToken(restParameterNode.paramName().orElse(null));
         return restParameterNode.modify(
                 leadingComma,
                 annotations,
@@ -2353,6 +2353,75 @@ public abstract class TreeModifier extends NodeTransformer<Node> {
                 expression,
                 annotChainingToken,
                 annotTagReference);
+    }
+
+    @Override
+    public QueryActionNode transform(
+            QueryActionNode queryActionNode) {
+        QueryPipelineNode queryPipeline =
+                modifyNode(queryActionNode.queryPipeline());
+        Token doKeyword =
+                modifyToken(queryActionNode.doKeyword());
+        BlockStatementNode blockStatement =
+                modifyNode(queryActionNode.blockStatement());
+        return queryActionNode.modify(
+                queryPipeline,
+                doKeyword,
+                blockStatement);
+    }
+
+    @Override
+    public OptionalFieldAccessExpressionNode transform(
+            OptionalFieldAccessExpressionNode optionalFieldAccessExpressionNode) {
+        ExpressionNode expression =
+                modifyNode(optionalFieldAccessExpressionNode.expression());
+        Token optionalChainingToken =
+                modifyToken(optionalFieldAccessExpressionNode.optionalChainingToken());
+        Token fieldName =
+                modifyToken(optionalFieldAccessExpressionNode.fieldName());
+        return optionalFieldAccessExpressionNode.modify(
+                expression,
+                optionalChainingToken,
+                fieldName);
+    }
+
+    @Override
+    public ConditionalExpressionNode transform(
+            ConditionalExpressionNode conditionalExpressionNode) {
+        ExpressionNode lhsExpression =
+                modifyNode(conditionalExpressionNode.lhsExpression());
+        Token questionMarkToken =
+                modifyToken(conditionalExpressionNode.questionMarkToken());
+        ExpressionNode middleExpression =
+                modifyNode(conditionalExpressionNode.middleExpression());
+        Token colonToken =
+                modifyToken(conditionalExpressionNode.colonToken());
+        ExpressionNode endExpression =
+                modifyNode(conditionalExpressionNode.endExpression());
+        return conditionalExpressionNode.modify(
+                lhsExpression,
+                questionMarkToken,
+                middleExpression,
+                colonToken,
+                endExpression);
+    }
+
+    @Override
+    public ArrayTypeDescriptorNode transform(
+            ArrayTypeDescriptorNode arrayTypeDescriptorNode) {
+        TypeDescriptorNode memberTypeDesc =
+                modifyNode(arrayTypeDescriptorNode.memberTypeDesc());
+        Token openBracket =
+                modifyToken(arrayTypeDescriptorNode.openBracket());
+        Node arrayLength =
+                modifyNode(arrayTypeDescriptorNode.arrayLength().orElse(null));
+        Token closeBracket =
+                modifyToken(arrayTypeDescriptorNode.closeBracket());
+        return arrayTypeDescriptorNode.modify(
+                memberTypeDesc,
+                openBracket,
+                arrayLength,
+                closeBracket);
     }
 
     // Tokens
